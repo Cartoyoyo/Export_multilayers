@@ -27,4 +27,5 @@ changelog=1.2.0 - Correction export DXF via QgsVectorFileWriter
     1.1.0 - Added DXF, KML, GML, FlatGeobuf, TAB, SQLite, Excel formats
     Added bilingual FR/EN interface
     Removed hardcoded default output directory
+
     1.0.0 - Initial release

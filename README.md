@@ -1,4 +1,4 @@
-# Export Couches Vecteur — Vector Layer Export
+# Export_multilayers
 
 > Plugin QGIS · v1.2.0 · QGIS 3.x · Bilingue FR / EN
 
@@ -8,7 +8,7 @@
 
 ### Description
 
-**Export Couches Vecteur** est un plugin QGIS qui vous permet d'exporter en un clic l'ensemble (ou une sélection) de vos couches vecteur dans le format de votre choix, avec reprojection optionnelle et suivi de progression en temps réel.
+**Export_multilayers** est un plugin QGIS qui vous permet d'exporter en un clic l'ensemble (ou une sélection) de vos couches vecteur dans le format de votre choix, avec reprojection optionnelle et suivi de progression en temps réel dans un repertoire dédié.
 
 Fini les allers-retours dans les menus : ouvrez le plugin, cochez vos couches, choisissez votre format et votre dossier de sortie — et laissez le plugin faire le reste.
 
@@ -78,7 +78,7 @@ Imaginez que vous avez un projet QGIS bien rempli — des dizaines de couches, d
 
 ### Description
 
-**Vector Layer Export** is a QGIS plugin that lets you export all (or a selection) of your vector layers in your chosen format, with optional reprojection and real-time progress tracking — all from a single, clean dialog.
+**Export_multilayers** is a QGIS plugin that lets you export all (or a selection) of your vector layers in your chosen format, with optional reprojection and real-time progress tracking — all from a single, clean dialog, in a repertory.
 
 No more digging through menus: open the plugin, check your layers, pick a format and output folder, and let the plugin handle the rest.
 
