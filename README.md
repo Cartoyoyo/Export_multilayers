@@ -27,7 +27,7 @@ Fini les allers-retours dans les menus : ouvrez le plugin, cochez vos couches, c
 1. Téléchargez ou clonez ce dépôt :
 
    ```bash
-   git clone https://github.com/yoanl/Export_multilayers.git
+   git clone https://github.com/Cartoyoyo/Export_multilayers.git
    ```
 
 2. Copiez le dossier `Export_multilayers` dans le répertoire des plugins QGIS :
@@ -97,7 +97,7 @@ No more digging through menus: open the plugin, check your layers, pick a format
 1. Download or clone this repository:
 
    ```bash
-   git clone https://github.com/yoanl/Export_multilayers.git
+   git clone https://github.com/Cartoyoyo/Export_multilayers.git
    ```
 
 2. Copy the `Export_multilayers` folder to your QGIS plugins directory:

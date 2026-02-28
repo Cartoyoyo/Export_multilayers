@@ -16,9 +16,9 @@ about=FR: Plugin permettant d'exporter les multiples couches vecteur du projet Q
     GeoPackage, CSV, Excel (XLSX), KML, GML, FlatGeobuf, MapInfo TAB,
     SQLite or DXF (one file per layer), with optional reprojection,
     progress bar and bilingual FR / EN interface.
-homepage=https://github.com/yoanl/Export_multilayers
-tracker=https://github.com/yoanl/Export_multilayers/issues
-repository=https://github.com/yoanl/Export_multilayers
+homepage=https://github.com/Cartoyoyo/Export_multilayers
+tracker=https://github.com/Cartoyoyo/Export_multilayers/issues
+repository=https://github.com/Cartoyoyo/Export_multilayers
 license=GNU GPL v2
 icon=icon.png
 hasProcessingProvider=no

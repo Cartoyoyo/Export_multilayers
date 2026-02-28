@@ -179,8 +179,8 @@ class AboutDialog(QDialog):
 
         # Dépôt GitHub
         lbl_github = QLabel(
-            '<a href="https://github.com/yoanl/Export_multilayers">'
-            'github.com/yoanl/Export_multilayers</a>'
+            '<a href="https://github.com/Cartoyoyo/Export_multilayers">'
+            'github.com/Cartoyoyo/Export_multilayers</a>'
         )
         lbl_github.setOpenExternalLinks(True)
         lbl_github.setAlignment(Qt.AlignCenter)
