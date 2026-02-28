@@ -11,10 +11,10 @@ from qgis.PyQt.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
                                   QDialogButtonBox, QProgressBar, QTextEdit,
                                   QApplication, QSizePolicy, QFrame)
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QFont
+from qgis.PyQt.QtGui import QFont, QPixmap
 
 
-# ── Dictionnaire de traductions ───────────────────────────────────────────────
+# ── Translation dictionary (FR / EN) ─────────────────────────────────────────
 
 TRANSLATIONS = {
     'fr': {
@@ -34,6 +34,7 @@ TRANSLATIONS = {
         'log_label':       "Journal :",
         'export_btn':      "Exporter",
         'close_btn':       "Fermer",
+        'about_btn':       "À propos",
         'crs_options': {
             "EPSG:2154 — Lambert-93":     "EPSG:2154",
             "EPSG:4326 — WGS 84":         "EPSG:4326",
@@ -69,6 +70,7 @@ TRANSLATIONS = {
         'log_label':       "Log:",
         'export_btn':      "Export",
         'close_btn':       "Close",
+        'about_btn':       "About",
         'crs_options': {
             "EPSG:2154 — Lambert-93":   "EPSG:2154",
             "EPSG:4326 — WGS 84":       "EPSG:4326",
@@ -89,7 +91,7 @@ TRANSLATIONS = {
     }
 }
 
-# ── Formats d'export ──────────────────────────────────────────────────────────
+# ── Supported export formats: display label → OGR driver extension ────────────
 
 FORMATS = {
     "GeoJSON (.geojson)":  "geojson",
@@ -105,30 +107,108 @@ FORMATS = {
     "DXF (.dxf)":          "dxf",
 }
 
-# Formats sans géométrie → avertissement dans le journal
+# Formats that do not preserve geometry — a warning is shown in the log
 NO_GEOM_FORMATS = {"csv", "xlsx"}
 
-# Format DXF → algorithme dédié
+# DXF requires a dedicated export path (polygon-to-line conversion + no attributes)
 DXF_FORMAT = "dxf"
 
 
 def sanitize_filename(name):
+    """Replace characters illegal in file names with underscores."""
     return re.sub(r'[\\/*?:"<>|]', "_", name)
 
 
-# ── Dialogue principal ────────────────────────────────────────────────────────
+# ── About dialog ──────────────────────────────────────────────────────────────
+
+class AboutDialog(QDialog):
+    """Simple modal dialog showing plugin info: logo, license and GitHub link."""
+
+    def __init__(self, lang='fr', parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("À propos" if lang == 'fr' else "About")
+        self.setFixedWidth(400)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowContextHelpButtonHint)
+
+        layout = QVBoxLayout()
+        layout.setSpacing(10)
+        layout.setContentsMargins(20, 20, 20, 20)
+
+        # Logo
+        logo_path = os.path.join(os.path.dirname(__file__), "logo.png")
+        if os.path.exists(logo_path):
+            lbl_logo = QLabel()
+            pixmap = QPixmap(logo_path).scaledToWidth(160, Qt.SmoothTransformation)
+            lbl_logo.setPixmap(pixmap)
+            lbl_logo.setAlignment(Qt.AlignCenter)
+            layout.addWidget(lbl_logo)
+
+        # Titre
+        lbl_name = QLabel("Export Couches Vecteur\nVector Layer Export")
+        font_title = QFont()
+        font_title.setBold(True)
+        font_title.setPointSize(12)
+        lbl_name.setFont(font_title)
+        lbl_name.setAlignment(Qt.AlignCenter)
+        layout.addWidget(lbl_name)
+
+        # Version
+        lbl_version = QLabel("Version 1.2.0")
+        lbl_version.setAlignment(Qt.AlignCenter)
+        layout.addWidget(lbl_version)
+
+        # Séparateur
+        sep = QFrame()
+        sep.setFrameShape(QFrame.HLine)
+        sep.setFrameShadow(QFrame.Sunken)
+        layout.addWidget(sep)
+
+        # Auteur
+        lbl_author = QLabel("Yoan Laloux — Vichy Communauté\ny.laloux@vichy-communaute.fr")
+        lbl_author.setAlignment(Qt.AlignCenter)
+        layout.addWidget(lbl_author)
+
+        # Licence
+        lbl_license = QLabel(
+            '<a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.html">'
+            'GNU General Public License v2.0</a>'
+        )
+        lbl_license.setOpenExternalLinks(True)
+        lbl_license.setAlignment(Qt.AlignCenter)
+        layout.addWidget(lbl_license)
+
+        # Dépôt GitHub
+        lbl_github = QLabel(
+            '<a href="https://github.com/yoanl/Export_multilayers">'
+            'github.com/yoanl/Export_multilayers</a>'
+        )
+        lbl_github.setOpenExternalLinks(True)
+        lbl_github.setAlignment(Qt.AlignCenter)
+        layout.addWidget(lbl_github)
+
+        # Bouton fermer
+        btn_close = QPushButton("Fermer" if lang == 'fr' else "Close")
+        btn_close.clicked.connect(self.accept)
+        layout.addWidget(btn_close)
+
+        self.setLayout(layout)
+
+
+# ── Main export dialog ────────────────────────────────────────────────────────
 
 class ExportDialog(QDialog):
+    """Main dialog: layer selection, format/CRS/directory picker, progress bar and log."""
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.lang = 'fr'
+        self.lang = 'fr'  # Default language: French
         self.setMinimumWidth(620)
         self.setMinimumHeight(720)
 
         layout = QVBoxLayout()
         layout.setSpacing(6)
 
-        # ── Barre supérieure : titre + switch langue ──────────
+        # ── Top bar: title label + language toggle + about button ────────────
         top_layout = QHBoxLayout()
 
         self.lbl_title = QLabel()
@@ -159,6 +239,25 @@ class ExportDialog(QDialog):
         self.btn_lang.clicked.connect(self.toggle_language)
         top_layout.addWidget(self.btn_lang)
 
+        self.btn_about = QPushButton()
+        self.btn_about.setFixedWidth(90)
+        self.btn_about.setFixedHeight(28)
+        self.btn_about.setCursor(Qt.PointingHandCursor)
+        self.btn_about.setStyleSheet("""
+            QPushButton {
+                background-color: #7f8c8d;
+                color: white;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 11px;
+            }
+            QPushButton:hover {
+                background-color: #95a5a6;
+            }
+        """)
+        self.btn_about.clicked.connect(self.show_about)
+        top_layout.addWidget(self.btn_about)
+
         layout.addLayout(top_layout)
 
         # Séparateur
@@ -167,7 +266,7 @@ class ExportDialog(QDialog):
         separator.setFrameShadow(QFrame.Sunken)
         layout.addWidget(separator)
 
-        # ── Liste des couches ─────────────────────────────────
+        # ── Layer list: populate with all vector layers from the current project ──
         self.lbl_layers = QLabel()
         layout.addWidget(self.lbl_layers)
 
@@ -175,7 +274,7 @@ class ExportDialog(QDialog):
         self.layer_list.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Expanding
         )
-        self.layers = {}
+        self.layers = {}  # Maps list item label → QgsVectorLayer
         for layer in QgsProject.instance().mapLayers().values():
             if layer.type() == QgsMapLayer.VectorLayer:
                 label = f"{layer.name()}  [{layer.dataProvider().name()}]"
@@ -186,7 +285,7 @@ class ExportDialog(QDialog):
                 self.layers[label] = layer
         layout.addWidget(self.layer_list)
 
-        # ── Boutons sélection ─────────────────────────────────
+        # ── Select all / deselect all buttons ────────────────
         btn_sel_layout = QHBoxLayout()
         self.btn_all  = QPushButton()
         self.btn_none = QPushButton()
@@ -196,7 +295,7 @@ class ExportDialog(QDialog):
         btn_sel_layout.addWidget(self.btn_none)
         layout.addLayout(btn_sel_layout)
 
-        # ── Format d'export ───────────────────────────────────
+        # ── Export format dropdown ────────────────────────────
         self.lbl_format = QLabel()
         layout.addWidget(self.lbl_format)
         self.format_combo = QComboBox()
@@ -204,13 +303,13 @@ class ExportDialog(QDialog):
             self.format_combo.addItem(fmt)
         layout.addWidget(self.format_combo)
 
-        # ── CRS de sortie ─────────────────────────────────────
+        # ── Output CRS dropdown ───────────────────────────────
         self.lbl_crs = QLabel()
         layout.addWidget(self.lbl_crs)
         self.crs_combo = QComboBox()
         layout.addWidget(self.crs_combo)
 
-        # ── Répertoire de sortie ──────────────────────────────
+        # ── Output directory picker ───────────────────────────
         self.lbl_output = QLabel()
         layout.addWidget(self.lbl_output)
         dir_layout = QHBoxLayout()
@@ -222,7 +321,7 @@ class ExportDialog(QDialog):
         dir_layout.addWidget(self.btn_browse)
         layout.addLayout(dir_layout)
 
-        # ── Barre de progression ──────────────────────────────
+        # ── Progress bar and status label ────────────────────
         self.lbl_progress = QLabel()
         layout.addWidget(self.lbl_progress)
 
@@ -236,7 +335,7 @@ class ExportDialog(QDialog):
         self.progress_bar.setTextVisible(True)
         layout.addWidget(self.progress_bar)
 
-        # ── Journal ───────────────────────────────────────────
+        # ── Read-only log area ────────────────────────────────
         self.lbl_log = QLabel()
         layout.addWidget(self.lbl_log)
         self.log_area = QTextEdit()
@@ -244,7 +343,7 @@ class ExportDialog(QDialog):
         self.log_area.setFixedHeight(130)
         layout.addWidget(self.log_area)
 
-        # ── Boutons Exporter / Fermer ─────────────────────────
+        # ── Export / Close buttons ────────────────────────────
         self.buttons    = QDialogButtonBox(
             QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
@@ -256,24 +355,27 @@ class ExportDialog(QDialog):
 
         self.setLayout(layout)
 
-        # ── Appliquer la langue par défaut ────────────────────
+        # Apply default language strings to all widgets
         self.apply_language()
 
-    # ── Gestion de la langue ──────────────────────────────────
+    # ── Language management ───────────────────────────────────
 
     def t(self, key, **kwargs):
+        """Return the translated string for the given key, with optional format args."""
         text = TRANSLATIONS[self.lang][key]
         if kwargs:
             text = text.format(**kwargs)
         return text
 
     def toggle_language(self):
+        """Switch between French and English, preserving the current CRS selection."""
         crs_index = self.crs_combo.currentIndex()
         self.lang  = 'en' if self.lang == 'fr' else 'fr'
         self.apply_language()
         self.crs_combo.setCurrentIndex(crs_index)
 
     def apply_language(self):
+        """Update all widget labels to the current language."""
         tr = TRANSLATIONS[self.lang]
 
         self.setWindowTitle(tr['window_title'])
@@ -293,6 +395,7 @@ class ExportDialog(QDialog):
         self.lbl_log.setText(tr['log_label'])
         self.btn_export.setText(tr['export_btn'])
         self.btn_close.setText(tr['close_btn'])
+        self.btn_about.setText(tr['about_btn'])
 
         current_idx = self.crs_combo.currentIndex()
         self.crs_combo.clear()
@@ -302,7 +405,11 @@ class ExportDialog(QDialog):
         if current_idx >= 0:
             self.crs_combo.setCurrentIndex(current_idx)
 
-    # ── Helpers ───────────────────────────────────────────────
+    def show_about(self):
+        dialog = AboutDialog(lang=self.lang, parent=self)
+        dialog.exec_()
+
+    # ── Helper methods ────────────────────────────────────────
 
     def select_all(self):
         for i in range(self.layer_list.count()):
@@ -332,6 +439,7 @@ class ExportDialog(QDialog):
         QApplication.processEvents()
 
     def set_controls_enabled(self, enabled):
+        """Enable or disable input controls during export to prevent concurrent runs."""
         self.layer_list.setEnabled(enabled)
         self.format_combo.setEnabled(enabled)
         self.crs_combo.setEnabled(enabled)
@@ -339,16 +447,17 @@ class ExportDialog(QDialog):
         self.btn_export.setEnabled(enabled)
         self.btn_lang.setEnabled(enabled)
 
-    # ── Export DXF ────────────────────────────────────────────
+    # ── DXF export ────────────────────────────────────────────
 
     def export_dxf(self, layer, output_path, crs_code):
         """
-        Export DXF via QgsVectorFileWriter.
-        Les polygones sont convertis en contours (lignes).
+        Export a layer to DXF via QgsVectorFileWriter.
+        Polygon layers are converted to their boundary lines first,
+        because DXF only stores geometry (no attributes).
         """
         self.log("  ℹ  Note : DXF exporte uniquement la géométrie (attributs ignorés)")
 
-        # Convertir les polygones en lignes (contours uniquement)
+        # Convert polygons to boundary lines — DXF does not support polygon fills
         geom_type = QgsWkbTypes.geometryType(layer.wkbType())
         if geom_type == QgsWkbTypes.PolygonGeometry:
             self.log("  ℹ  Conversion polygones → contours (lignes)")
@@ -379,9 +488,10 @@ class ExportDialog(QDialog):
         if error != QgsVectorFileWriter.NoError:
             raise Exception(error_msg if error_msg else f"Erreur DXF (code {error})")
 
-    # ── Export principal ──────────────────────────────────────
+    # ── Main export orchestration ─────────────────────────────
 
     def run_export(self):
+        """Iterate over selected layers and export each one to the chosen format."""
         selected_layers = self.get_selected_layers()
         fmt        = FORMATS[self.format_combo.currentText()]
         output_dir = self.dir_edit.text().strip()
@@ -415,7 +525,7 @@ class ExportDialog(QDialog):
             )
             self.log(f"▶  {layer.name()}  [{layer.dataProvider().name()}]")
 
-            # Avertissement formats sans géométrie
+            # Warn when the chosen format does not support geometry
             if fmt in NO_GEOM_FORMATS:
                 self.log(self.t('warn_no_geom'))
 
@@ -423,11 +533,11 @@ class ExportDialog(QDialog):
 
             try:
                 if fmt == DXF_FORMAT:
-                    # ── Algorithme dédié DXF (avec fallback ENCODING) ──
+                    # DXF requires a dedicated path (polygon conversion + no attributes)
                     self.export_dxf(layer, output_path, crs_code)
 
                 elif crs_code:
-                    # ── Reprojection + export OGR ─────────────────────
+                    # Reproject on-the-fly then write to the target format
                     processing.run("native:reprojectlayer", {
                         'INPUT':      layer,
                         'TARGET_CRS': QgsCoordinateReferenceSystem(crs_code),
@@ -435,7 +545,7 @@ class ExportDialog(QDialog):
                     })
 
                 else:
-                    # ── Export OGR standard ───────────────────────────
+                    # Standard OGR export, keeping the original CRS
                     processing.run("native:savefeatures", {
                         'INPUT':  layer,
                         'OUTPUT': output_path
@@ -450,7 +560,7 @@ class ExportDialog(QDialog):
             self.progress_bar.setValue(i + 1)
             QApplication.processEvents()
 
-        # ── Résumé final ──────────────────────────────────────
+        # ── Final summary ─────────────────────────────────────
         if errors == 0:
             self.progress_status.setText(
                 self.t('export_done_ok', total=total)

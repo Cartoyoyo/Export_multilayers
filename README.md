@@ -1,6 +1,6 @@
 # Export_multilayers
 
-> Plugin QGIS · v1.2.0 · QGIS 3.x · Bilingue FR / EN
+> Plugin QGIS · v1.3.0 · QGIS 3.x · Bilingue FR / EN
 
 ---
 
@@ -146,8 +146,11 @@ Picture this: your QGIS project is packed with dozens of layers and your manager
 
 ## Changelog
 
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
+
 | Version | Date | Notes |
 |---------|------|-------|
+| **1.3.0** | 2026-02-28 | Dialog "À propos" (logo, licence, GitHub) — plugin dans le menu Vecteur — fichier `LICENSE` — commentaires en anglais |
 | **1.2.0** | 2025 | Correction de l'export DXF via `QgsVectorFileWriter` — conversion automatique des polygones en contours |
 | **1.1.0** | 2025 | Ajout des formats DXF, KML, GML, FlatGeobuf, TAB, SQLite, Excel — interface bilingue FR/EN |
 | **1.0.0** | 2025 | Version initiale |

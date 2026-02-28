@@ -4,8 +4,8 @@ qgisMinimumVersion=3.0
 qgisMaximumVersion=3.99
 description=FR: Export des couches vecteur avec choix du format, du CRS et du répertoire
     EN: Export vector layers with format, CRS and output directory selection
-version=1.2.0
-author=y_laloux
+version=1.3.0
+author=Yoan Laloux
 email=y.laloux@vichy-communaute.fr
 about=FR: Plugin permettant d'exporter les multiples couches vecteur du projet QGIS
     en GeoJSON, Shapefile, GeoPackage, CSV, Excel (XLSX), KML, GML,
@@ -19,13 +19,18 @@ about=FR: Plugin permettant d'exporter les multiples couches vecteur du projet Q
 homepage=https://github.com/yoanl/Export_multilayers
 tracker=https://github.com/yoanl/Export_multilayers/issues
 repository=https://github.com/yoanl/Export_multilayers
+license=GNU GPL v2
 icon=icon.png
 hasProcessingProvider=no
-changelog=1.2.0 - Correction export DXF via QgsVectorFileWriter
-    Les polygones sont convertis en contours (lignes uniquement)
-    Export géométrie seule (attributs non supportés par DXF)
+changelog=1.3.0 - Added About dialog (logo, license, GitHub link)
+    Plugin moved to Vector menu per QGIS guidelines
+    Added LICENSE file and license field in metadata
+    English comments and docstrings added throughout
+    Removed unused icon assets
+    1.2.0 - Fixed DXF export via QgsVectorFileWriter
+    Polygons converted to boundary lines for DXF compatibility
+    Geometry-only export (attributes not supported by DXF)
     1.1.0 - Added DXF, KML, GML, FlatGeobuf, TAB, SQLite, Excel formats
     Added bilingual FR/EN interface
     Removed hardcoded default output directory
-
     1.0.0 - Initial release
