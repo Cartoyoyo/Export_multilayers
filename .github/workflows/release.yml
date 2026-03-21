@@ -1,6 +1,5 @@
 name: Release to QGIS Plugin Repository
 
-# Triggered when a version tag is pushed (e.g. v1.3.1)
 on:
   push:
     tags:
@@ -22,26 +21,26 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install qgis-plugin-ci
-        run: pip install qgis-plugin-ci
-
       - name: Get version from tag
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
-      # Build the ZIP with qgis-plugin-ci (handles metadata version patching)
+      # Build the ZIP ourselves — plugin files inside Export_multilayers/ folder
       - name: Package plugin
-        run: qgis-plugin-ci package ${{ steps.version.outputs.VERSION }}
-
-      # Find the generated ZIP
-      - name: Locate ZIP
         id: zip
         run: |
-          ls -la *.zip 2>/dev/null || true
-          ZIP=$(ls *.zip 2>/dev/null | head -1)
-          echo "Found: $ZIP"
-          echo "ZIP_PATH=$ZIP" >> "$GITHUB_OUTPUT"
-          if [ -z "$ZIP" ]; then echo "ERROR: no ZIP found!" && exit 1; fi
+          VERSION="${{ steps.version.outputs.VERSION }}"
+          ZIP_NAME="Export_multilayers.${VERSION}.zip"
+          mkdir -p Export_multilayers
+          cp -r __init__.py export_couches.py export_dialog.py metadata.txt \
+                icon.png logo.png LICENSE README.md CHANGELOG.md \
+                Export_multilayers/
+          zip -r "$ZIP_NAME" Export_multilayers/
+          echo "ZIP_PATH=$ZIP_NAME" >> "$GITHUB_OUTPUT"
+          echo "Created $ZIP_NAME ($(du -h "$ZIP_NAME" | cut -f1))"
+          # Verify structure
+          echo "--- ZIP contents ---"
+          unzip -l "$ZIP_NAME" | head -20
 
       # Create a GitHub Release with the ZIP attached
       - name: Create GitHub Release
