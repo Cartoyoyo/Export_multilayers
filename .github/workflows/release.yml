@@ -54,24 +54,23 @@ jobs:
         env:
           OSGEO_USERNAME: ${{ secrets.OSGEO_USERNAME }}
           OSGEO_PASSWORD: ${{ secrets.OSGEO_PASSWORD }}
+          PLUGIN_ZIP: ${{ steps.zip.outputs.ZIP_PATH }}
         run: |
-          python3 << 'PYEOF'
-          import xmlrpc.client
-          import base64
-          import os
+          python3 -c "
+          import xmlrpc.client, os
 
-          zip_path = "${{ steps.zip.outputs.ZIP_PATH }}"
-          username = os.environ["OSGEO_USERNAME"]
-          password = os.environ["OSGEO_PASSWORD"]
+          zip_path = os.environ['PLUGIN_ZIP']
+          username = os.environ['OSGEO_USERNAME']
+          password = os.environ['OSGEO_PASSWORD']
 
-          print(f"Uploading {zip_path} to plugins.qgis.org ...")
+          print(f'Uploading {zip_path} to plugins.qgis.org ...')
 
-          with open(zip_path, "rb") as f:
+          with open(zip_path, 'rb') as f:
               zip_data = f.read()
 
           server = xmlrpc.client.ServerProxy(
-              f"https://{username}:{password}@plugins.qgis.org/plugins/RPC2/"
+              f'https://{username}:{password}@plugins.qgis.org/plugins/RPC2/'
           )
           result = server.plugin.upload(xmlrpc.client.Binary(zip_data))
-          print(f"Upload OK: {result}")
-          PYEOF
+          print(f'Upload OK: {result}')
+          "
