@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 ---
 
+## [1.3.1] - 2026-03-21
+
+### Fixed
+- About dialog version now read dynamically from `metadata.txt` instead of hardcoded value.
+- License aligned to GNU GPL v2 in both `LICENSE` file and `metadata.txt`.
+
+### Added
+- GitHub Actions workflow for automated release to QGIS plugin repository on tag push.
+
+---
+
 ## [1.3.0] - 2026-02-28
 
 ### Added

@@ -1,0 +1,47 @@
+name: Release to QGIS Plugin Repository
+
+# Triggered when a version tag is pushed (e.g. v1.3.1)
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install qgis-plugin-ci
+        run: pip install qgis-plugin-ci
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+
+      # Build the ZIP (plugin_name must match the repository folder name)
+      - name: Package plugin
+        run: qgis-plugin-ci package ${{ steps.version.outputs.VERSION }}
+
+      # Create a GitHub Release with the ZIP attached
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "Export_multilayers.${{ steps.version.outputs.VERSION }}.zip"
+          generate_release_notes: true
+
+      # Publish to plugins.qgis.org (requires OSGEO_* secrets)
+      - name: Publish to QGIS Plugin Repository
+        if: ${{ vars.PUBLISH_TO_QGIS == 'true' }}
+        run: >
+          qgis-plugin-ci release publish
+          --osgeo-username "${{ secrets.OSGEO_USERNAME }}"
+          --osgeo-password "${{ secrets.OSGEO_PASSWORD }}"
+          ${{ steps.version.outputs.VERSION }}
