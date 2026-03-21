@@ -1,2 +1,1 @@
-[general]
-plugin_path = .
+plugin_path: .
