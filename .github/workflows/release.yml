@@ -44,7 +44,7 @@ jobs:
       - name: Publish to QGIS Plugin Repository
         if: ${{ vars.PUBLISH_TO_QGIS == 'true' }}
         run: >
-          qgis-plugin-ci release publish
+          qgis-plugin-ci release
+          ${{ steps.version.outputs.VERSION }}
           --osgeo-username "${{ secrets.OSGEO_USERNAME }}"
           --osgeo-password "${{ secrets.OSGEO_PASSWORD }}"
-          ${{ steps.version.outputs.VERSION }}
