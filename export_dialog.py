@@ -152,8 +152,16 @@ class AboutDialog(QDialog):
         lbl_name.setAlignment(Qt.AlignCenter)
         layout.addWidget(lbl_name)
 
-        # Version
-        lbl_version = QLabel("Version 1.2.0")
+        # Version — read dynamically from metadata.txt
+        version = "?"
+        meta_path = os.path.join(os.path.dirname(__file__), "metadata.txt")
+        if os.path.exists(meta_path):
+            with open(meta_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if line.startswith('version='):
+                        version = line.strip().split('=', 1)[1]
+                        break
+        lbl_version = QLabel(f"Version {version}")
         lbl_version.setAlignment(Qt.AlignCenter)
         layout.addWidget(lbl_version)
 
