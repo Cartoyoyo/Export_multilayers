@@ -29,22 +29,49 @@ jobs:
         id: version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
 
-      # Build the ZIP (plugin_name must match the repository folder name)
+      # Build the ZIP with qgis-plugin-ci (handles metadata version patching)
       - name: Package plugin
         run: qgis-plugin-ci package ${{ steps.version.outputs.VERSION }}
+
+      # Find the generated ZIP
+      - name: Locate ZIP
+        id: zip
+        run: |
+          ZIP=$(ls Export_multilayers*.zip 2>/dev/null | head -1)
+          echo "Found: $ZIP"
+          echo "ZIP_PATH=$ZIP" >> "$GITHUB_OUTPUT"
 
       # Create a GitHub Release with the ZIP attached
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: "Export_multilayers.${{ steps.version.outputs.VERSION }}.zip"
+          files: ${{ steps.zip.outputs.ZIP_PATH }}
           generate_release_notes: true
 
-      # Publish to plugins.qgis.org (requires OSGEO_* secrets)
+      # Upload to plugins.qgis.org via XML-RPC API
       - name: Publish to QGIS Plugin Repository
         if: ${{ vars.PUBLISH_TO_QGIS == 'true' }}
-        run: >
-          qgis-plugin-ci release
-          ${{ steps.version.outputs.VERSION }}
-          --osgeo-username "${{ secrets.OSGEO_USERNAME }}"
-          --osgeo-password "${{ secrets.OSGEO_PASSWORD }}"
+        env:
+          OSGEO_USERNAME: ${{ secrets.OSGEO_USERNAME }}
+          OSGEO_PASSWORD: ${{ secrets.OSGEO_PASSWORD }}
+        run: |
+          python3 << 'PYEOF'
+          import xmlrpc.client
+          import base64
+          import os
+
+          zip_path = "${{ steps.zip.outputs.ZIP_PATH }}"
+          username = os.environ["OSGEO_USERNAME"]
+          password = os.environ["OSGEO_PASSWORD"]
+
+          print(f"Uploading {zip_path} to plugins.qgis.org ...")
+
+          with open(zip_path, "rb") as f:
+              zip_data = f.read()
+
+          server = xmlrpc.client.ServerProxy(
+              f"https://{username}:{password}@plugins.qgis.org/plugins/RPC2/"
+          )
+          result = server.plugin.upload(xmlrpc.client.Binary(zip_data))
+          print(f"Upload OK: {result}")
+          PYEOF
