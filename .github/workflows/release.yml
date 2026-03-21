@@ -37,9 +37,11 @@ jobs:
       - name: Locate ZIP
         id: zip
         run: |
-          ZIP=$(ls Export_multilayers*.zip 2>/dev/null | head -1)
+          ls -la *.zip 2>/dev/null || true
+          ZIP=$(ls *.zip 2>/dev/null | head -1)
           echo "Found: $ZIP"
           echo "ZIP_PATH=$ZIP" >> "$GITHUB_OUTPUT"
+          if [ -z "$ZIP" ]; then echo "ERROR: no ZIP found!" && exit 1; fi
 
       # Create a GitHub Release with the ZIP attached
       - name: Create GitHub Release
