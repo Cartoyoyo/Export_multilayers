@@ -1,6 +1,6 @@
 # Export_multilayers
 
-> Plugin QGIS · v1.3.0 · QGIS 3.x · Bilingue FR / EN
+> Plugin QGIS · v1.4.0 · QGIS 3.x et 4.x · FR / EN / ES / PT / DE
 
 ---
 
@@ -14,13 +14,14 @@ Fini les allers-retours dans les menus : ouvrez le plugin, cochez vos couches, c
 
 ### Fonctionnalités
 
-- **11 formats d'export** : GeoJSON, Shapefile, GeoPackage, CSV, Excel (XLSX), KML, GML, FlatGeobuf, MapInfo TAB, SQLite, DXF
+- **12 formats d'export** (dont DXF en fichier unique) : GeoJSON, Shapefile, GeoPackage, CSV, Excel (XLSX), KML, GML, FlatGeobuf, MapInfo TAB, SQLite, DXF
 - **Reprojection à la volée** : Lambert-93 (EPSG:2154), WGS 84 (EPSG:4326), Web Mercator (EPSG:3857), ou conservation du CRS d'origine
 - **Sélection flexible** : cochez / décochez les couches individuellement ou via les boutons *Tout sélectionner* / *Tout désélectionner*
 - **Barre de progression** et journal en temps réel pour suivre chaque export
 - **Export DXF intelligent** : les polygones sont automatiquement convertis en contours (lignes) pour assurer la compatibilité DXF
-- **Interface bilingue** : basculez entre le français et l'anglais d'un simple clic, sans redémarrer le plugin
-- Un fichier par couche, nommé automatiquement d'après le nom de la couche
+- **Interface en 5 langues** : français, anglais, espagnol, portugais, allemand, sans redémarrer le plugin
+- **Export limité à l'emprise affichée** (option)
+- Un fichier par couche, nommé d'après la couche — sauf en **GeoPackage** et **DXF fichier unique**, où toutes les couches vont dans un seul fichier ; en GeoPackage, le nom du fichier est demandé au lancement
 
 ### Installation
 
@@ -84,13 +85,14 @@ No more digging through menus: open the plugin, check your layers, pick a format
 
 ### Features
 
-- **11 export formats**: GeoJSON, Shapefile, GeoPackage, CSV, Excel (XLSX), KML, GML, FlatGeobuf, MapInfo TAB, SQLite, DXF
+- **12 export formats** (including single-file DXF): GeoJSON, Shapefile, GeoPackage, CSV, Excel (XLSX), KML, GML, FlatGeobuf, MapInfo TAB, SQLite, DXF
 - **On-the-fly reprojection**: Lambert-93 (EPSG:2154), WGS 84 (EPSG:4326), Web Mercator (EPSG:3857), or keep original CRS
 - **Flexible selection**: check / uncheck layers individually or use *Select all* / *Deselect all* buttons
 - **Progress bar** and real-time log to track every export
 - **Smart DXF export**: polygons are automatically converted to outlines (lines) for DXF compatibility
-- **Bilingual interface**: switch between French and English in one click, no restart needed
-- One file per layer, automatically named after the layer name
+- **5-language interface**: French, English, Spanish, Portuguese, German, no restart needed
+- **Export limited to the map view** (option)
+- One file per layer, named after the layer — except **GeoPackage** and **single-file DXF**, where all layers go into one file; for GeoPackage, the file name is asked when the export starts
 
 ### Installation
 
@@ -150,6 +152,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 | Version | Date | Notes |
 |---------|------|-------|
+| **1.4.0** | 2026-10-17 | Nom du GeoPackage demandé à l'export — DXF fichier unique — export à l'emprise — interface 5 langues — CSV français — nouvel « À propos » — compatibilité QGIS 4 |
 | **1.3.0** | 2026-02-28 | Dialog "À propos" (logo, licence, GitHub) — plugin dans le menu Vecteur — fichier `LICENSE` — commentaires en anglais |
 | **1.2.0** | 2025 | Correction de l'export DXF via `QgsVectorFileWriter` — conversion automatique des polygones en contours |
 | **1.1.0** | 2025 | Ajout des formats DXF, KML, GML, FlatGeobuf, TAB, SQLite, Excel — interface bilingue FR/EN |

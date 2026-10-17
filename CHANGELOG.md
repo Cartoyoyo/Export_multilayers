@@ -4,6 +4,26 @@ All notable changes to this project are documented in this file.
 
 ---
 
+## [1.4.0] - 2026-10-17
+
+### Added
+- GeoPackage export asks for the output file name (default: project name) and confirms before overwriting.
+- Single-file DXF export (all layers in one DXF, labels kept).
+- Option to export only the features within the current map view.
+- Interface in 5 languages (FR / EN / ES / PT / DE).
+- "Create folder" button next to the output directory.
+- French CSV (`;` separator, `,` decimal, UTF-8 BOM) for Excel.
+
+### Changed
+- New About dialog (banner, badges, presentation, GitHub / LinkedIn links).
+- All layers exported to GeoPackage go into a single file.
+- Transparent icon background.
+
+### Fixed
+- QGIS 4 / Qt6 compatibility (scoped enums, `exec()`, `QAction` import, DXF export checks); `qgisMaximumVersion=4.99`.
+
+---
+
 ## [1.3.1] - 2026-03-21
 
 ### Fixed

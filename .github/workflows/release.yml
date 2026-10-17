@@ -33,7 +33,7 @@ jobs:
           ZIP_NAME="Export_multilayers.${VERSION}.zip"
           mkdir -p Export_multilayers
           cp -r __init__.py export_couches.py export_dialog.py metadata.txt \
-                icon.png logo.png LICENSE README.md CHANGELOG.md \
+                icon.png logo.png icons LICENSE README.md CHANGELOG.md \
                 Export_multilayers/
           zip -r "$ZIP_NAME" Export_multilayers/
           echo "ZIP_PATH=$ZIP_NAME" >> "$GITHUB_OUTPUT"
