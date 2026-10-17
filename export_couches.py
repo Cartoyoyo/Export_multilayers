@@ -1,4 +1,7 @@
-from qgis.PyQt.QtWidgets import QAction
+try:
+    from qgis.PyQt.QtGui import QAction        # Qt6 / QGIS 4
+except ImportError:
+    from qgis.PyQt.QtWidgets import QAction    # Qt5 / QGIS 3
 from qgis.PyQt.QtGui import QIcon
 import os
 
@@ -39,4 +42,4 @@ class ExportCouchesPlugin:
         """Open the export dialog."""
         from .export_dialog import ExportDialog
         dialog = ExportDialog(self.iface.mainWindow())
-        dialog.exec_()
+        dialog.exec()
