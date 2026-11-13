@@ -5,25 +5,36 @@ qgisMaximumVersion=4.99
 supportsQt6=True
 description=FR: Export des couches vecteur avec choix du format, du CRS et du répertoire
     EN: Export vector layers with format, CRS and output directory selection
-version=1.4.0
+version=1.5.0
 author=Yoan Laloux
 email=y.laloux@vichy-communaute.fr
 about=FR: Plugin permettant d'exporter les multiples couches vecteur du projet QGIS
     en GeoJSON, Shapefile, GeoPackage, CSV, Excel (XLSX), KML, GML,
     FlatGeobuf, MapInfo TAB, SQLite ou DXF (un fichier par couche, ou un seul en GeoPackage et DXF unique),
     avec reprojection optionnelle, barre de progression et interface
-    en 5 langues (FR, EN, ES, PT, DE).
+    en 5 langues (FR, EN, ES, PT, DE). Export limité à une zone : écran,
+    polygone ou rectangle dessiné, entités sélectionnées ou tampon, objets entiers
+    ou découpés ; préfixe date / heure / texte ; style des couches conservé
+    (dans le GeoPackage ou fichier .qml).
     EN: Plugin to export QGIS project multi vector layers to GeoJSON, Shapefile,
     GeoPackage, CSV, Excel (XLSX), KML, GML, FlatGeobuf, MapInfo TAB,
     SQLite or DXF (one file per layer, or a single one for GeoPackage and single-file DXF), with optional reprojection,
-    progress bar and a 5-language interface (FR, EN, ES, PT, DE).
+    progress bar and a 5-language interface (FR, EN, ES, PT, DE). Export limited to an area:
+    screen, drawn polygon or rectangle, selected features or buffer, features whole
+    or clipped; date / time / text file prefix; layer styles kept (inside the
+    GeoPackage or as a .qml file).
 homepage=https://github.com/Cartoyoyo/Export_multilayers
 tracker=https://github.com/Cartoyoyo/Export_multilayers/issues
 repository=https://github.com/Cartoyoyo/Export_multilayers
 license=GNU GPL v2
 icon=icon.png
 hasProcessingProvider=no
-changelog=1.4.0 - GeoPackage export asks for the file name, confirms before overwriting
+changelog=1.5.0 - Export area: screen, drawn polygon or rectangle, selected features, buffer; features whole or clipped
+    Keep layer styles (stored in the GeoPackage, or .qml next to each file)
+    File name prefix: date, date and time, text
+    New two-column window: layers grouped like the Layers panel with a filter, summary line, folded log
+    As on screen button; DXF limited to an area keeps symbology and labels; CSV and Excel follow the area
+    1.4.0 - GeoPackage export asks for the file name, confirms before overwriting
     Single-file DXF export, export limited to the map view
     Interface in 5 languages (FR, EN, ES, PT, DE), French CSV for Excel
     New About dialog, transparent icon

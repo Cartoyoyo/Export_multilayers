@@ -13,6 +13,7 @@ class ExportCouchesPlugin:
         # Store reference to the QGIS interface
         self.iface     = iface
         self.action    = None
+        self.dialog    = None
         self.icon_path = os.path.join(
             os.path.dirname(__file__), "icon.png"
         )
@@ -33,13 +34,36 @@ class ExportCouchesPlugin:
 
     def unload(self):
         """Remove the plugin menu entry and toolbar icon."""
+        if self.dialog is not None:
+            try:
+                self.dialog.close()
+            except RuntimeError:
+                pass
+            self.dialog = None
         self.iface.removePluginVectorMenu("&Export Couches Vecteur", self.action)
         self.iface.removeToolBarIcon(self.action)
         if self.action:
             del self.action
 
     def run(self):
-        """Open the export dialog."""
+        """Open the export dialog (non-modal: the map stays usable to draw
+        or select the export area)."""
+        if self.dialog is not None:
+            try:
+                if self.dialog.isVisible():
+                    self.dialog.raise_()
+                    self.dialog.activateWindow()
+                    return
+                if not getattr(self.dialog, '_closed', True):   # hidden while drawing/selecting
+                    self.dialog.bring_back()
+                    return
+                self.dialog.close()
+                self.dialog.deleteLater()
+            except RuntimeError:
+                pass
         from .export_dialog import ExportDialog
-        dialog = ExportDialog(self.iface.mainWindow())
-        dialog.exec()
+        self.dialog = ExportDialog(self.iface.mainWindow())
+        self.dialog.setModal(False)
+        self.dialog.show()
+        self.dialog.raise_()
+        self.dialog.activateWindow()

@@ -4,6 +4,26 @@ All notable changes to this project are documented in this file.
 
 ---
 
+## [1.5.0] - 2026-11-13
+
+### Added
+- Export area: whole layer, screen extent, drawn polygon, drawn rectangle, selected features of a polygon layer, or buffer (metres) around the selected features of any layer; area preview on the map and surface shown in the dialog. A "Select" button makes the chosen layer active and starts the QGIS selection tool (QGIS selects on the active layer).
+- Features crossing the area limit: kept whole or clipped (lines and polygons become multipart; Z is kept).
+- "Keep layer styles" option: GeoPackage stores each layer style in the file (default style, applied when opened); Shapefile, GeoJSON, FlatGeobuf, MapInfo TAB, GML and SQLite get a `.qml` sidecar with the same name, loaded automatically by QGIS. Choice remembered between sessions.
+- File name prefix: none, date (`20261113_`), date and time (`20261113_1154_`), free text, or date + text; example shown live, choice remembered between sessions (GeoPackage: prefix on the proposed file name).
+- "As on screen" button to check only the layers shown on the map (visible and within their scale range).
+
+### Changed
+- New two-column layout: (1) layers on the left, grouped like the Layers panel (tri-state groups, layer icons, filter box, "n / total checked" counter); on the right (2) export area as a row of buttons, (3) format and files, (4) a highlighted "Keep layer styles" card with an on/off switch and a format-aware explanation; one-line summary above Export; log folded by default (opens on error); blocking problems shown on the status line.
+- The dialog is no longer modal, so the map stays usable to draw or select the area; the layer list follows the map order and layers added/removed in the project.
+- CSV and Excel exports are now limited to the area too (they were exported whole).
+
+### Fixed
+- DXF limited to an area kept neither the symbology nor the labels of the layers.
+- Screen extent filter used feature bounding boxes instead of the real geometries.
+
+---
+
 ## [1.4.0] - 2026-10-17
 
 ### Added
