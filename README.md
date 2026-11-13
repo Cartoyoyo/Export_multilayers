@@ -1,6 +1,6 @@
 # Export_multilayers
 
-> Plugin QGIS · v1.5.0 · QGIS 3.x et 4.x · FR / EN / ES / PT / DE
+> Plugin QGIS · v1.5.1 · QGIS 3.x et 4.x · FR / EN / ES / PT / DE
 
 ---
 
@@ -8,7 +8,7 @@
 
 <table>
 <tr>
-<td colspan="2" align="center"><img src="docs/screenshots/01_fenetre.png" alt="Fenêtre principale" width="760"><br><sub><b>Fenêtre principale</b> — ① couches rangées comme le panneau Couches, ② zone d'export, ③ format et fichiers, ④ style · <i>Main window</i></sub></td>
+<td colspan="2" align="center"><img src="docs/screenshots/01_fenetre.png" alt="Fenêtre principale" width="760"><br><sub><b>Fenêtre principale</b> — ① couches rangées comme le panneau Couches, ② zone d'export, ③ format et fichiers, ④ style, ⑤ ajout dans QGIS, ⑥ ZIP · <i>Main window</i></sub></td>
 </tr>
 <tr>
 <td colspan="2" align="center"><img src="docs/screenshots/02_zone_decoupee.png" alt="Zone dessinée et parcelles découpées" width="760"><br><sub><b>Polygone dessiné</b> (pointillé orange) et parcelles exportées <b>découpées à la limite</b> · <i>Drawn area and features clipped at its limit</i></sub></td>
@@ -18,7 +18,7 @@
 <td align="center" valign="top"><img src="docs/screenshots/04_filtre_couches.png" alt="Filtre des couches" width="300"><br><sub><b>Filtre</b> des couches · <i>Layer filter</i></sub></td>
 </tr>
 <tr>
-<td colspan="2" align="center"><img src="docs/screenshots/05_export_termine.png" alt="Export terminé, journal ouvert" width="760"><br><sub><b>Export terminé</b> : récapitulatif, préfixe date, style .qml, journal · <i>Export done, summary and log</i></sub></td>
+<td colspan="2" align="center"><img src="docs/screenshots/05_export_termine.png" alt="Export terminé, journal ouvert" width="760"><br><sub><b>Export terminé</b> : récapitulatif, préfixe date, style .qml, fichiers réunis dans un ZIP, journal · <i>Export done, summary and log</i></sub></td>
 </tr>
 </table>
 
@@ -41,6 +41,8 @@ Fini les allers-retours dans les menus : ouvrez le plugin, cochez vos couches, c
 - **Export DXF intelligent** : les polygones sont automatiquement convertis en contours (lignes) pour assurer la compatibilité DXF
 - **Interface en 5 langues** : français, anglais, espagnol, portugais, allemand, sans redémarrer le plugin
 - **Conserver le style des couches** (option) : en GeoPackage, le style (symbologie + étiquettes) est enregistré dans le fichier et appliqué à l'ouverture ; en Shapefile, GeoJSON, FlatGeobuf, TAB, GML et SQLite, un fichier `.qml` du même nom est écrit à côté et relu automatiquement par QGIS
+- **Ajouter les couches dans QGIS** (option) : les fichiers exportés s'ouvrent dans un groupe « Export AAAAMMJJ_HHMM » en haut du panneau Couches
+- **Rassembler dans un ZIP** (option) : tous les fichiers de l'export (y compris les fichiers annexes du Shapefile et les `.qml`) dans un seul `.zip`, prêt à envoyer
 - **Préfixe des fichiers** : aucun, date (`20261113_`), date et heure (`20261113_1154_`), texte libre ou date + texte — aperçu du nom en direct
 - **Zone d'export** : toute la couche, emprise de l'écran, polygone ou rectangle dessiné sur la carte, entités sélectionnées (une commune, un bassin…) ou tampon de X m autour de la sélection — objets **entiers** ou **découpés** à la limite de la zone
 - Un fichier par couche, nommé d'après la couche — sauf en **GeoPackage** et **DXF fichier unique**, où toutes les couches vont dans un seul fichier ; en GeoPackage, le nom du fichier est demandé au lancement
@@ -70,10 +72,10 @@ Fini les allers-retours dans les menus : ouvrez le plugin, cochez vos couches, c
 Imaginez que vous avez un projet QGIS bien rempli — des dizaines de couches, des données en tout genre, et votre chef vous demande *"tu peux m'envoyer tout ça en Shapefile pour ce soir ?"*. Pas de panique !
 
 1. **Lancez le plugin** via la barre d'outils ou le menu **Extensions → Export Couches Vecteur**.
-2. **① Couches** (colonne de gauche) : les couches vecteur apparaissent rangées comme dans le panneau Couches, cochées par défaut. Cochez un groupe pour toutes ses couches, filtrez par nom, ou cliquez *Comme à l'écran* pour ne garder que les couches affichées.
+2. **① Couches** (colonne de gauche) : les couches vecteur apparaissent rangées comme dans le panneau Couches ; à l'ouverture, seules celles affichées sur la carte sont cochées. Cochez un groupe pour toutes ses couches, filtrez par nom, ou cliquez *Comme à l'écran* pour ne garder que les couches affichées.
 3. **② Zone d'export** : *Tout*, *Écran*, *Polygone* ou *Rectangle* dessiné sur la carte, *Sélection* (une commune, un bassin…) ou *Tampon* autour de la sélection — puis objets **entiers** ou **découpés** à la limite.
 4. **③ Format et fichiers** : format (GeoJSON pour votre équipe web, Shapefile pour votre client old-school, DXF pour votre collègue sous AutoCAD…), CRS, dossier de sortie et préfixe éventuel (date `20261113_`, date et heure `20261113_1154_`, texte).
-5. **④ Conserver le style** : un interrupteur pour que les fichiers s'ouvrent avec leur symbologie et leurs étiquettes.
+5. **④ Conserver le style**, **⑤ Ajouter les couches dans QGIS**, **⑥ Rassembler dans un ZIP** : trois interrupteurs, mémorisés d'une fois sur l'autre.
 6. Vérifiez la ligne de **récapitulatif**, cliquez sur **Exporter** et regardez la barre de progression avancer.
 7. Le **journal** (bouton *Journal*) détaille chaque couche ; il s'ouvre tout seul en cas d'erreur.
 
@@ -114,6 +116,8 @@ No more digging through menus: open the plugin, check your layers, pick a format
 - **Smart DXF export**: polygons are automatically converted to outlines (lines) for DXF compatibility
 - **5-language interface**: French, English, Spanish, Portuguese, German, no restart needed
 - **Keep layer styles** (option): in GeoPackage, the style (symbology + labels) is stored in the file and applied when opened; in Shapefile, GeoJSON, FlatGeobuf, TAB, GML and SQLite, a `.qml` file with the same name is written alongside and loaded automatically by QGIS
+- **Add the layers in QGIS** (option): exported files open in an "Export YYYYMMDD_HHMM" group at the top of the Layers panel
+- **Gather into a ZIP** (option): every file of the export (shapefile parts and `.qml` included) in a single `.zip`, ready to send
 - **File name prefix**: none, date (`20261113_`), date and time (`20261113_1154_`), free text or date + text — live name preview
 - **Export area**: whole layer, screen extent, polygon or rectangle drawn on the map, selected features (a municipality, a catchment…) or an X m buffer around the selection — features kept **whole** or **clipped** at the area limit
 - One file per layer, named after the layer — except **GeoPackage** and **single-file DXF**, where all layers go into one file; for GeoPackage, the file name is asked when the export starts
@@ -143,10 +147,10 @@ No more digging through menus: open the plugin, check your layers, pick a format
 Picture this: your QGIS project is packed with dozens of layers and your manager just asked *"can you send me all of that as Shapefiles by tonight?"*. No stress!
 
 1. **Launch the plugin** from the toolbar or the **Plugins → Export Couches Vecteur** menu.
-2. **(1) Layers** (left column): vector layers are grouped as in the Layers panel and pre-checked. Check a group for all its layers, filter by name, or click *As on screen* to keep only the layers shown on the map.
+2. **(1) Layers** (left column): vector layers are grouped as in the Layers panel; when the dialog opens, only those shown on the map are checked. Check a group for all its layers, filter by name, or click *As on screen* to keep only the layers shown on the map.
 3. **(2) Export area**: *All*, *Screen*, *Polygon* or *Rectangle* drawn on the map, *Selection* (a municipality, a catchment…) or *Buffer* around the selection — then features kept **whole** or **clipped** at the limit.
 4. **(3) Format and files**: format (GeoJSON for your web team, Shapefile for your old-school client, DXF for your AutoCAD colleague…), CRS, output folder and optional prefix (date `20261113_`, date and time `20261113_1154_`, text).
-5. **(4) Keep layer styles**: one switch so the files open with their symbology and labels.
+5. **(4) Keep layer styles**, **(5) Add the layers in QGIS**, **(6) Gather into a ZIP**: three switches, remembered between sessions.
 6. Check the **summary** line, click **Export** and watch the progress bar fill up.
 7. The **log** (*Log* button) details each layer; it opens by itself if something goes wrong.
 
@@ -176,6 +180,7 @@ See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 | Version | Date | Notes |
 |---------|------|-------|
+| **1.5.1** | 2026-11-13 | Ajouter les couches dans QGIS — rassembler les fichiers dans un ZIP — ouverture avec les couches affichées cochées |
 | **1.5.0** | 2026-11-13 | Zone d'export (écran, polygone ou rectangle dessiné, sélection, tampon ; objets entiers ou découpés) — conserver le style des couches — préfixe date / heure / texte — nouvelle fenêtre en 2 colonnes |
 | **1.4.0** | 2026-10-17 | Nom du GeoPackage demandé à l'export — DXF fichier unique — export à l'emprise — interface 5 langues — CSV français — nouvel « À propos » — compatibilité QGIS 4 |
 | **1.3.0** | 2026-02-28 | Dialog "À propos" (logo, licence, GitHub) — plugin dans le menu Vecteur — fichier `LICENSE` — commentaires en anglais |

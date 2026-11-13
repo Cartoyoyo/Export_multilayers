@@ -1,6 +1,9 @@
 import processing
 import os
 import re
+import glob
+import time
+import zipfile
 from datetime import datetime
 
 from qgis.core import (Qgis, QgsProject, QgsSettings, QgsMapLayerStyle,
@@ -430,6 +433,71 @@ TR = {
         'fr': "Impossible d'ouvrir {path} en écriture", 'en': "Cannot open {path} for writing",
         'es': "No se puede abrir {path} para escritura", 'pt': "Não é possível abrir {path} para escrita",
         'de': "{path} kann nicht zum Schreiben geöffnet werden"},
+    'add_project': {
+        'fr': "Ajouter les couches dans QGIS", 'en': "Add the layers in QGIS",
+        'es': "Añadir las capas en QGIS", 'pt': "Adicionar as camadas no QGIS",
+        'de': "Layer in QGIS hinzufügen"},
+    'add_project_on': {
+        'fr': "Les fichiers exportés s'ouvrent dans un groupe « Export {date} » en haut du panneau Couches.",
+        'en': "Exported files open in an “Export {date}” group at the top of the Layers panel.",
+        'es': "Los archivos exportados se abren en un grupo «Export {date}» arriba del panel Capas.",
+        'pt': "Os ficheiros exportados abrem num grupo «Export {date}» no topo do painel Camadas.",
+        'de': "Die exportierten Dateien öffnen sich in einer Gruppe „Export {date}“ oben im Layerbedienfeld."},
+    'add_project_off': {
+        'fr': "Les fichiers sont seulement écrits sur le disque.",
+        'en': "Files are only written to disk.",
+        'es': "Los archivos solo se escriben en el disco.",
+        'pt': "Os ficheiros são apenas escritos no disco.",
+        'de': "Die Dateien werden nur auf die Festplatte geschrieben."},
+    'added_group': {
+        'fr': "Export {date}", 'en': "Export {date}", 'es': "Export {date}",
+        'pt': "Export {date}", 'de': "Export {date}"},
+    'added_log': {
+        'fr': "  ➕  {n} couche(s) ajoutée(s) dans QGIS, groupe « {group} »",
+        'en': "  ➕  {n} layer(s) added in QGIS, group “{group}”",
+        'es': "  ➕  {n} capa(s) añadida(s) en QGIS, grupo «{group}»",
+        'pt': "  ➕  {n} camada(s) adicionada(s) no QGIS, grupo «{group}»",
+        'de': "  ➕  {n} Layer in QGIS hinzugefügt, Gruppe „{group}“"},
+    'added_fail': {
+        'fr': "  ⚠  Impossible d'ouvrir {name} dans QGIS",
+        'en': "  ⚠  Cannot open {name} in QGIS",
+        'es': "  ⚠  No se puede abrir {name} en QGIS",
+        'pt': "  ⚠  Não é possível abrir {name} no QGIS",
+        'de': "  ⚠  {name} kann nicht in QGIS geöffnet werden"},
+    'recap_added': {
+        'fr': "➕ ajoutées dans QGIS", 'en': "➕ added in QGIS", 'es': "➕ añadidas en QGIS",
+        'pt': "➕ adicionadas no QGIS", 'de': "➕ in QGIS hinzugefügt"},
+    'zip_title': {
+        'fr': "Rassembler dans un ZIP", 'en': "Gather into a ZIP", 'es': "Reunir en un ZIP",
+        'pt': "Reunir num ZIP", 'de': "In einem ZIP zusammenfassen"},
+    'zip_on': {
+        'fr': "Tous les fichiers de l'export sont réunis dans {name} ; les fichiers séparés sont supprimés.",
+        'en': "All files of the export are gathered in {name}; the separate files are deleted.",
+        'es': "Todos los archivos de la exportación se reúnen en {name}; los archivos sueltos se eliminan.",
+        'pt': "Todos os ficheiros da exportação são reunidos em {name}; os ficheiros soltos são apagados.",
+        'de': "Alle Dateien des Exports werden in {name} zusammengefasst; die einzelnen Dateien werden gelöscht."},
+    'zip_on_keep': {
+        'fr': "Tous les fichiers sont réunis dans {name} ; ils restent aussi à côté pour les couches ajoutées dans QGIS.",
+        'en': "All files are gathered in {name}; they also stay alongside for the layers added in QGIS.",
+        'es': "Todos los archivos se reúnen en {name}; también quedan al lado para las capas añadidas en QGIS.",
+        'pt': "Todos os ficheiros são reunidos em {name}; ficam também ao lado para as camadas adicionadas no QGIS.",
+        'de': "Alle Dateien werden in {name} zusammengefasst; sie bleiben auch daneben für die in QGIS hinzugefügten Layer."},
+    'zip_off': {
+        'fr': "Les fichiers restent séparés dans le dossier.",
+        'en': "Files stay separate in the folder.",
+        'es': "Los archivos quedan separados en la carpeta.",
+        'pt': "Os ficheiros ficam separados na pasta.",
+        'de': "Die Dateien bleiben einzeln im Ordner."},
+    'zip_log': {
+        'fr': "  🗜  {n} fichier(s) réunis dans {name}", 'en': "  🗜  {n} file(s) gathered in {name}",
+        'es': "  🗜  {n} archivo(s) reunidos en {name}", 'pt': "  🗜  {n} ficheiro(s) reunidos em {name}",
+        'de': "  🗜  {n} Datei(en) in {name} zusammengefasst"},
+    'zip_error': {
+        'fr': "  ⚠  ZIP non créé : {error}", 'en': "  ⚠  ZIP not created: {error}",
+        'es': "  ⚠  ZIP no creado: {error}", 'pt': "  ⚠  ZIP não criado: {error}",
+        'de': "  ⚠  ZIP nicht erstellt: {error}"},
+    'recap_zip': {
+        'fr': "🗜 dans un ZIP", 'en': "🗜 in a ZIP", 'es': "🗜 en un ZIP", 'pt': "🗜 num ZIP", 'de': "🗜 als ZIP"},
     'keep_style': {
         'fr': "Conserver le style des couches", 'en': "Keep layer styles",
         'es': "Conservar el estilo de las capas", 'pt': "Manter o estilo das camadas",
@@ -843,6 +911,7 @@ class ExportDialog(QDialog):
         self.layer_list.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.layers = {}
         self._populate_layers(initial=True)
+        self.select_visible()                      # default: layers shown on the map
         box1.addWidget(self.layer_list, 1)
 
         btn_sel_layout = QHBoxLayout()
@@ -1030,7 +1099,7 @@ class ExportDialog(QDialog):
         self.chk_style.setChecked(QgsSettings().value(SETTINGS_KEY + "keep_style", False, type=bool))
         self.style_card = StyleCard(self.chk_style)
         card = QHBoxLayout(self.style_card)
-        card.setContentsMargins(10, 7, 10, 7)
+        card.setContentsMargins(10, 5, 10, 5)
         card.setSpacing(10)
         card.addWidget(self.chk_style)
         palette = QLabel("🎨")
@@ -1056,6 +1125,45 @@ class ExportDialog(QDialog):
         card.addLayout(texts, 1)
         self.chk_style.toggled.connect(self._on_style_toggled)
         right.addWidget(self.style_card)
+
+        # ── ⑤ Ajouter les couches au projet ─────────────────────────────────
+        self.chk_add = ToggleSwitch()
+        self.chk_add.setChecked(QgsSettings().value(SETTINGS_KEY + "add_to_project", False, type=bool))
+        self.add_card = StyleCard(self.chk_add)
+        add_box = QHBoxLayout(self.add_card)
+        add_box.setContentsMargins(10, 4, 10, 4)
+        add_box.setSpacing(10)
+        add_box.addWidget(self.chk_add)
+        plus = QLabel("➕")
+        plus.setStyleSheet("font-size:18px;")
+        add_box.addWidget(plus)
+        add_texts = QVBoxLayout()
+        add_texts.setSpacing(2)
+        add_head = QHBoxLayout()
+        add_head.setSpacing(8)
+        self.add_badge = _badge_label("5")
+        add_head.addWidget(self.add_badge)
+        self.lbl_add_title = QLabel()
+        self.lbl_add_title.setStyleSheet("font-weight:bold;font-size:13px;")
+        add_head.addWidget(self.lbl_add_title)
+        self.lbl_add_chip = QLabel()
+        add_head.addWidget(self.lbl_add_chip)
+        add_head.addStretch()
+        add_texts.addLayout(add_head)
+        self.lbl_add_msg = QLabel()
+        self.lbl_add_msg.setWordWrap(True)
+        self.lbl_add_msg.setStyleSheet("font-size:11px;")
+        add_texts.addWidget(self.lbl_add_msg)
+        add_box.addLayout(add_texts, 1)
+        self.chk_add.toggled.connect(self._on_add_toggled)
+        right.addWidget(self.add_card)
+
+        # ── ⑥ Rassembler dans un ZIP ────────────────────────────────────────
+        (self.zip_card, self.chk_zip, self.zip_badge, self.lbl_zip_title,
+         self.lbl_zip_chip, self.lbl_zip_msg) = self._option_card(6, "🗜")
+        self.chk_zip.setChecked(QgsSettings().value(SETTINGS_KEY + "zip", False, type=bool))
+        self.chk_zip.toggled.connect(self._on_zip_toggled)
+        right.addWidget(self.zip_card)
 
         right.addStretch()
 
@@ -1095,7 +1203,7 @@ class ExportDialog(QDialog):
         # ── Journal (replié par défaut, pleine largeur) ─────────────────────
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
-        self.log_area.setFixedHeight(110)
+        self.log_area.setFixedHeight(96)
         self.log_area.setVisible(False)
         layout.addWidget(self.log_area)
 
@@ -1181,6 +1289,8 @@ class ExportDialog(QDialog):
         self.lbl_gpkg_info.setText(self.t('gpkg_info'))
         self.lbl_prefix.setText(self.t('lbl_prefix_short'))
         self.lbl_style_title.setText(self.t('keep_style'))
+        self.lbl_add_title.setText(self.t('add_project'))
+        self.lbl_zip_title.setText(self.t('zip_title'))
         self.style_card.setToolTip(self.t('keep_style_tip'))
         self._refresh_prefix_labels()
         self.prefix_combo.setToolTip(self.t('prefix_tip'))
@@ -1200,6 +1310,8 @@ class ExportDialog(QDialog):
             self.crs_combo.setCurrentIndex(current_idx)
         self._update_count()
         self._update_style_card()
+        self._update_add_card()
+        self._update_zip_card()
         self._update_recap()
 
     def show_about(self):
@@ -1284,6 +1396,150 @@ class ExportDialog(QDialog):
         self._update_style_card()
         self._update_recap()
 
+    def _option_card(self, number, icon):
+        """Framed on/off block (switch, icon, numbered title, chip, explanation)."""
+        switch = ToggleSwitch()
+        card = StyleCard(switch)
+        box = QHBoxLayout(card)
+        box.setContentsMargins(10, 4, 10, 4)
+        box.setSpacing(10)
+        box.addWidget(switch)
+        ic = QLabel(icon)
+        ic.setStyleSheet("font-size:18px;")
+        box.addWidget(ic)
+        texts = QVBoxLayout()
+        texts.setSpacing(2)
+        head = QHBoxLayout()
+        head.setSpacing(8)
+        badge = _badge_label(str(number))
+        head.addWidget(badge)
+        title = QLabel()
+        title.setStyleSheet("font-weight:bold;font-size:13px;")
+        head.addWidget(title)
+        chip = QLabel()
+        head.addWidget(chip)
+        head.addStretch()
+        texts.addLayout(head)
+        msg = QLabel()
+        msg.setWordWrap(True)
+        msg.setStyleSheet("font-size:11px;")
+        texts.addWidget(msg)
+        box.addLayout(texts, 1)
+        return card, switch, badge, title, chip, msg
+
+    def _paint_option_card(self, card, badge, chip, on):
+        card.set_state('on' if on else 'off')
+        badge.setStyleSheet("color:white;border-radius:10px;font-weight:bold;background:"
+                            + ("#1a6b3a" if on else "#9aa5ad") + ";")
+        chip.setText(self.t('style_on') if on else self.t('style_off'))
+        chip.setStyleSheet("font-size:10px;font-weight:bold;color:white;border-radius:8px;"
+                           "padding:1px 7px;background:" + ("#2e8b57" if on else "#9aa5ad") + ";")
+
+    def _on_zip_toggled(self, on):
+        QgsSettings().setValue(SETTINGS_KEY + "zip", on)
+        self._update_zip_card()
+        self._update_recap()
+
+    def _zip_name(self, prefix=None):
+        """<prefix><project>.zip, with date and time when the prefix has none."""
+        if prefix is None:
+            prefix = self._file_prefix() or ""
+        project = sanitize_filename(QgsProject.instance().baseName() or "export")
+        stamp = "" if re.match(r"\d{8}_", prefix) else "_" + datetime.now().strftime(DATETIME_FMT)
+        return f"{prefix}{project}{stamp}.zip"
+
+    def _update_zip_card(self):
+        on = self.chk_zip.isChecked()
+        self._paint_option_card(self.zip_card, self.zip_badge, self.lbl_zip_chip, on)
+        if not on:
+            self.lbl_zip_msg.setText(self.t('zip_off'))
+        else:
+            key = 'zip_on_keep' if self.chk_add.isChecked() else 'zip_on'
+            self.lbl_zip_msg.setText(self.t(key, name=self._zip_name()))
+
+    def _files_of_export(self):
+        """Every file written by this export (shapefile parts and .qml included)."""
+        files = []
+        for uri, _name in self._exported:
+            path = uri.split('|', 1)[0]
+            stem = os.path.splitext(path)[0]
+            for f in glob.glob(glob.escape(stem) + ".*"):
+                if f.lower().endswith(".zip") or f in files:
+                    continue
+                if os.path.getmtime(f) >= self._export_t0 - 2:     # only this export
+                    files.append(f)
+        return files
+
+    def _zip_exported(self, output_dir, prefix):
+        """Gather the files of this export into one ZIP; delete them unless the
+        layers were added to the project (they read the files)."""
+        if not self.chk_zip.isChecked() or not self._exported:
+            return
+        files = self._files_of_export()
+        if not files:
+            return
+        name = self._zip_name(prefix)
+        zip_path, n = os.path.join(output_dir, name), 2
+        while os.path.exists(zip_path):
+            zip_path, n = os.path.join(output_dir, f"{os.path.splitext(name)[0]} ({n}).zip"), n + 1
+        try:
+            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+                for f in files:
+                    zf.write(f, os.path.basename(f))
+        except (OSError, zipfile.BadZipFile) as e:
+            self.log(self.t('zip_error', error=e))
+            return
+        if not self.chk_add.isChecked():
+            for f in files:
+                try:
+                    os.remove(f)
+                except OSError:
+                    pass
+        self.log(self.t('zip_log', n=len(files), name=os.path.basename(zip_path)))
+
+    def _on_add_toggled(self, on):
+        QgsSettings().setValue(SETTINGS_KEY + "add_to_project", on)
+        self._update_add_card()
+        if hasattr(self, 'chk_zip'):
+            self._update_zip_card()
+        self._update_recap()
+
+    def _update_add_card(self):
+        on = self.chk_add.isChecked()
+        self.add_card.set_state('on' if on else 'off')
+        self.add_badge.setStyleSheet("color:white;border-radius:10px;font-weight:bold;background:"
+                                     + ("#1a6b3a" if on else "#9aa5ad") + ";")
+        self.lbl_add_chip.setText(self.t('style_on') if on else self.t('style_off'))
+        self.lbl_add_chip.setStyleSheet("font-size:10px;font-weight:bold;color:white;border-radius:8px;"
+                                        "padding:1px 7px;background:" + ("#2e8b57" if on else "#9aa5ad") + ";")
+        self.lbl_add_msg.setText(self.t('add_project_on', date=datetime.now().strftime(DATETIME_FMT))
+                                 if on else self.t('add_project_off'))
+
+    def _add_exported_to_project(self):
+        """Open the files written by this export in a new group at the top of the tree."""
+        if not self.chk_add.isChecked() or not self._exported:
+            return
+        project = QgsProject.instance()
+        root = project.layerTreeRoot()
+        base_name = self.t('added_group', date=datetime.now().strftime(DATETIME_FMT))
+        group_name, n = base_name, 2
+        while root.findGroup(group_name) is not None:      # two exports in the same minute
+            group_name, n = f"{base_name} ({n})", n + 1
+        group = root.insertGroup(0, group_name)
+        added = 0
+        for uri, name in self._exported:
+            layer = QgsVectorLayer(uri, name, "ogr")
+            if not layer.isValid():
+                self.log(self.t('added_fail', name=name))
+                continue
+            project.addMapLayer(layer, False)
+            group.addLayer(layer)
+            added += 1
+        if added == 0:
+            project.layerTreeRoot().removeChildNode(group)
+            return
+        self.log(self.t('added_log', n=added, group=group_name))
+
     def _style_kept(self):
         fmt = FORMATS.get(self.format_combo.currentText(), "")
         return fmt in (DXF_FORMAT, DXF_SINGLE_FORMAT) or \
@@ -1338,6 +1594,10 @@ class ExportDialog(QDialog):
             parts.append(prefix)
         if self._style_kept():
             parts.append(f"<b style='color:#1a6b3a'>{self.t('recap_style')}</b>")
+        if getattr(self, 'chk_add', None) is not None and self.chk_add.isChecked():
+            parts.append(f"<b style='color:#1a6b3a'>{self.t('recap_added')}</b>")
+        if getattr(self, 'chk_zip', None) is not None and self.chk_zip.isChecked():
+            parts.append(f"<b style='color:#1a6b3a'>{self.t('recap_zip')}</b>")
         self.lbl_recap.setText("▶ " + " · ".join(parts))
 
     # ── File name prefix ──────────────────────────────────────────────────────
@@ -1380,6 +1640,8 @@ class ExportDialog(QDialog):
         settings.setValue(SETTINGS_KEY + "prefix_mode", mode)
         settings.setValue(SETTINGS_KEY + "prefix_text", self.prefix_edit.text())
         self._update_prefix_example()
+        if hasattr(self, 'chk_zip'):
+            self._update_zip_card()
         self._update_recap()
 
     def _update_prefix_example(self, *args):
@@ -1446,10 +1708,15 @@ class ExportDialog(QDialog):
         if self.btn_log.isChecked() != show:
             self.btn_log.setChecked(show)       # re-enters with the same value
             return
+        if self.log_area.isVisible() == show:
+            return
+        before = self.height()                      # Qt may grow the window by itself
         self.log_area.setVisible(show)
         self.btn_log.setText(self.t('log_btn') + ("  ▾" if show else "  ▸"))
-        extra = 116 if show else -116
-        QTimer.singleShot(0, lambda: self.resize(self.width(), max(self.minimumSizeHint().height(), self.height() + extra)))
+        target = before + (102 if show else -102)
+        screen = self.screen().availableGeometry().height() if hasattr(self, 'screen') else 10000
+        QTimer.singleShot(0, lambda: self.resize(
+            self.width(), min(max(self.minimumSizeHint().height(), target), screen - 40)))
 
     def set_controls_enabled(self, enabled):
         self.layer_list.setEnabled(enabled)
@@ -1460,6 +1727,8 @@ class ExportDialog(QDialog):
         self.crs_combo.setEnabled(enabled)
         self.dir_edit.setEnabled(enabled)
         self.prefix_combo.setEnabled(enabled)
+        self.chk_add.setEnabled(enabled)
+        self.chk_zip.setEnabled(enabled)
         self.chk_style.setEnabled(enabled and
                                   FORMATS.get(self.format_combo.currentText(), "") in STYLE_FORMATS)
         self.prefix_edit.setEnabled(enabled and 'text' in PREFIX_MODES[self.prefix_combo.currentIndex()])
@@ -2076,6 +2345,7 @@ class ExportDialog(QDialog):
         try:
             self._dxf_write(export_layers, output_path, crs_code)
             self.log(self.t('export_ok', path=output_path))
+            self._exported.append((output_path, os.path.splitext(os.path.basename(output_path))[0]))
             self.progress_status.setText(self.t('export_done_ok', total=len(layers)))
         except Exception as e:
             self.log(self.t('export_error', error=e))
@@ -2085,6 +2355,8 @@ class ExportDialog(QDialog):
             kept_alive.clear()
 
         self.progress_bar.setValue(1)
+        self._add_exported_to_project()
+        self._zip_exported(output_dir, prefix)
         self.log(self.t('export_end'))
         self.set_controls_enabled(True)
 
@@ -2125,6 +2397,8 @@ class ExportDialog(QDialog):
         self.set_controls_enabled(False)
         self.log_area.clear()
         self.progress_status.setStyleSheet("")
+        self._exported = []          # (uri, name) of the files written, for "add to project"
+        self._export_t0 = time.time()
         if prefix:
             self.log(self.t('prefix_log', prefix=prefix))
         if zone is not None:
@@ -2219,6 +2493,11 @@ class ExportDialog(QDialog):
                 self.log(self.t('export_ok', path=output_path))
                 if self.chk_style.isChecked() and fmt in STYLE_FORMATS:
                     self._save_style(layer, fmt, output_path, safe_name)
+                if fmt == "gpkg":
+                    self._exported.append((f"{output_path}|layername={safe_name}", layer.name()))
+                else:
+                    self._exported.append((output_path,
+                                           os.path.splitext(os.path.basename(output_path))[0]))
             except Exception as e:
                 self.log(self.t('export_error', error=e))
                 errors += 1
@@ -2232,6 +2511,8 @@ class ExportDialog(QDialog):
             self.progress_status.setText(self.t('export_done_error', errors=errors, total=total))
             self._show_log(True)
 
+        self._add_exported_to_project()
+        self._zip_exported(output_dir, prefix)
         self.log(self.t('export_end'))
         self.set_controls_enabled(True)
         self.btn_close.setText(self.t('close_btn'))

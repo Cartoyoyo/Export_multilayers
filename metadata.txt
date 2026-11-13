@@ -5,7 +5,7 @@ qgisMaximumVersion=4.99
 supportsQt6=True
 description=FR: Export des couches vecteur avec choix du format, du CRS et du répertoire
     EN: Export vector layers with format, CRS and output directory selection
-version=1.5.0
+version=1.5.1
 author=Yoan Laloux
 email=y.laloux@vichy-communaute.fr
 about=FR: Plugin permettant d'exporter les multiples couches vecteur du projet QGIS
@@ -15,21 +15,26 @@ about=FR: Plugin permettant d'exporter les multiples couches vecteur du projet Q
     en 5 langues (FR, EN, ES, PT, DE). Export limité à une zone : écran,
     polygone ou rectangle dessiné, entités sélectionnées ou tampon, objets entiers
     ou découpés ; préfixe date / heure / texte ; style des couches conservé
-    (dans le GeoPackage ou fichier .qml).
+    (dans le GeoPackage ou fichier .qml) ; couches exportées ajoutées dans QGIS
+    et fichiers réunis dans un ZIP, au choix.
     EN: Plugin to export QGIS project multi vector layers to GeoJSON, Shapefile,
     GeoPackage, CSV, Excel (XLSX), KML, GML, FlatGeobuf, MapInfo TAB,
     SQLite or DXF (one file per layer, or a single one for GeoPackage and single-file DXF), with optional reprojection,
     progress bar and a 5-language interface (FR, EN, ES, PT, DE). Export limited to an area:
     screen, drawn polygon or rectangle, selected features or buffer, features whole
     or clipped; date / time / text file prefix; layer styles kept (inside the
-    GeoPackage or as a .qml file).
+    GeoPackage or as a .qml file); optionally add the exported layers in QGIS and
+    gather the files into a ZIP.
 homepage=https://github.com/Cartoyoyo/Export_multilayers
 tracker=https://github.com/Cartoyoyo/Export_multilayers/issues
 repository=https://github.com/Cartoyoyo/Export_multilayers
 license=GNU GPL v2
 icon=icon.png
 hasProcessingProvider=no
-changelog=1.5.0 - Export area: screen, drawn polygon or rectangle, selected features, buffer; features whole or clipped
+changelog=1.5.1 - Add the exported layers in QGIS (new group at the top of the Layers panel)
+    Gather all files of the export into one ZIP
+    The dialog opens with the layers shown on the map checked
+    1.5.0 - Export area: screen, drawn polygon or rectangle, selected features, buffer; features whole or clipped
     Keep layer styles (stored in the GeoPackage, or .qml next to each file)
     File name prefix: date, date and time, text
     New two-column window: layers grouped like the Layers panel with a filter, summary line, folded log

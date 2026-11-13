@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # all tags: tools/publish.py removes older versions not yet approved
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -75,3 +78,13 @@ jobs:
           result = server.plugin.upload(xmlrpc.client.Binary(zip_data))
           print(f'Upload OK: {result}')
           "
+
+      # Older tagged versions still waiting for a moderator are now useless:
+      # remove them (approved versions are never touched). A failure only warns.
+      - name: Remove older unapproved versions
+        if: ${{ vars.PUBLISH_TO_QGIS == 'true' }}
+        continue-on-error: true
+        env:
+          OSGEO_USER: ${{ secrets.OSGEO_USERNAME }}
+          OSGEO_PASSWORD: ${{ secrets.OSGEO_PASSWORD }}
+        run: python3 tools/publish.py --clean-only

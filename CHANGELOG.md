@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 ---
 
+## [1.5.1] - 2026-11-13
+
+### Added
+- "Add the layers in QGIS" option: the exported files open in an "Export YYYYMMDD_HHMM" group at the top of the Layers panel (with their style when it is kept).
+- "Gather into a ZIP" option: every file of the export (shapefile parts and .qml included) goes into one `<prefix><project>.zip`; the separate files are deleted unless the layers were added in QGIS.
+
+### Changed
+- When the dialog opens, only the layers shown on the map are checked (same as the "As on screen" button), instead of all layers.
+
+---
+
 ## [1.5.0] - 2026-11-13
 
 ### Added
